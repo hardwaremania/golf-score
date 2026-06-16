@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>친구들 골프 스코어</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.topbar{background:#fff;border-bottom:0.5px solid #e0e0dc;padding:0 1.5rem;display:flex;align-items:center;gap:10px;height:52px;position:sticky;top:0;z-index:100}
+.topbar-title{font-size:17px;font-weight:600;color:#1a1a1a}
+.topbar-icon{font-size:22px;color:#534AB7}
+.tab-bar{background:#fff;border-bottom:0.5px solid #e0e0dc;display:flex;padding:0 1.5rem;position:sticky;top:52px;z-index:99}
+.tab{padding:10px 18px;font-size:14px;cursor:pointer;border:none;background:none;color:#888;border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:5px}
+.tab.active{color:#534AB7;border-bottom:2px solid #534AB7;font-weight:600}
+.tab:hover:not(.active){color:#444;background:#f9f9f7}
+.main{max-width:780px;margin:0 auto;padding:1.5rem 1rem}
+.section{display:none}.section.active{display:block}
+.card{background:#fff;border:0.5px solid #e0e0dc;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.row{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px}
+label{font-size:12px;color:#888;font-weight:500;letter-spacing:.3px}
+input,select,textarea{font-size:14px;padding:8px 11px;border-radius:8px;border:1px solid #e0e0dc;background:#fafaf8;color:#1a1a1a;width:100%;transition:border .15s;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:#534AB7;background:#fff}
+.btn{padding:9px 20px;border-radius:9px;border:1px solid #e0e0dc;background:#fff;color:#1a1a1a;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;font-family:inherit}
+.btn:hover{background:#f5f5f3;border-color:#ccc}
+.btn-primary{background:#534AB7;color:#fff;border-color:#534AB7}
+.btn-primary:hover{background:#3C3489;border-color:#3C3489}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:7px}
+.btn-danger{border-color:#f09595;color:#993C1D;background:#fff}
+.btn-danger:hover{background:#fcebeb}
+.section-title{font-size:14px;font-weight:600;margin-bottom:14px;color:#1a1a1a;display:flex;align-items:center;gap:6px}
+.score-table{width:100%;border-collapse:collapse;font-size:13px}
+.score-table th{background:#f5f5f3;font-size:11px;font-weight:600;color:#888;padding:7px 5px;text-align:center;border-bottom:1px solid #e0e0dc}
+.score-table td{padding:5px 4px;text-align:center;border-bottom:0.5px solid #f0f0ee}
+.score-table tr:last-child td{border-bottom:none}
+.score-input{width:52px;text-align:center;padding:5px;font-size:13px;border-radius:6px;border:1px solid #e0e0dc;background:#fafaf8}
+.score-input:focus{outline:none;border-color:#534AB7;background:#fff}
+.total-row td{font-weight:600;background:#EEEDFE;color:#3C3489}
+.front9-row td,.back9-row td{background:#f0eff9;font-weight:500;font-size:12px;color:#534AB7}
+.hole-label{color:#888;font-size:12px}
+.par-label{color:#534AB7;font-size:12px;font-weight:500}
+.under{color:#0a6e4e}
+.over{color:#c0392b}
+.even{color:#888}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin:0 auto}
+.av0{background:#EEEDFE;color:#3C3489}
+.av1{background:#E1F5EE;color:#085041}
+.av2{background:#FAECE7;color:#993C1D}
+.av3{background:#FBEAF0;color:#99335A}
+.rank-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid #e0e0dc;margin-bottom:8px;background:#fff;transition:all .2s}
+.rank-card.first{border:1.5px solid #534AB7;background:linear-gradient(135deg,#f7f6ff 0%,#EEEDFE 100%)}
+.rank-num{font-size:20px;width:32px;text-align:center}
+.rank-info{flex:1}
+.rank-name{font-size:15px;font-weight:600}
+.rank-detail{font-size:12px;color:#888;margin-top:2px}
+.rank-score{font-size:22px;font-weight:700;color:#534AB7}
+.rank-diff{font-size:12px;margin-top:1px;text-align:right}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:0}
+.stat-card{background:#f5f5f3;border-radius:10px;padding:12px 14px}
+.stat-label{font-size:11px;color:#888;margin-bottom:4px;font-weight:500}
+.stat-val{font-size:22px;font-weight:700;color:#1a1a1a}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;display:inline-block}
+.badge-gold{background:#FAEEDA;color:#633806}
+.badge-silver{background:#f0f0ee;color:#555}
+.tag{font-size:11px;padding:3px 8px;border-radius:6px;background:#f0f0ee;color:#555;margin-right:4px;margin-top:3px;display:inline-block}
+.history-item{padding:12px 0;border-bottom:0.5px solid #f0f0ee;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.history-item:last-child{border-bottom:none}
+.divider{height:0.5px;background:#e8e8e4;margin:14px 0}
+.ai-box{border:1.5px dashed #c5c2f0;border-radius:12px;padding:1.8rem;text-align:center;cursor:pointer;transition:all .15s;background:#fafaff}
+.ai-box:hover{background:#f3f2ff;border-color:#534AB7}
+.ai-icon{font-size:38px;color:#534AB7;margin-bottom:8px}
+.ai-status{margin-top:12px;padding:12px 14px;border-radius:10px;background:#f5f5f3;font-size:13px;display:none;color:#444;text-align:left}
+.ai-status.ok{background:#E1F5EE;color:#085041}
+.ai-status.err{background:#FCEBEB;color:#993C1D}
+.file-input{display:none}
+.empty-state{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px}
+.empty-state i{font-size:40px;display:block;margin-bottom:10px;color:#ccc}
+.winner-badge{background:#534AB7;color:#fff;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:600;margin-left:6px;vertical-align:middle}
+.course-info{font-size:12px;color:#888;margin-top:2px}
+.img-preview{max-width:100%;max-height:200px;border-radius:10px;margin-top:10px;border:1px solid #e0e0dc}
+@media(max-width:600px){.tab span{display:none}.tab{padding:10px 14px}.main{padding:1rem .75rem}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <i class="ti ti-golf topbar-icon" aria-hidden="true"></i>
+  <span class="topbar-title">친구들 골프 스코어</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('record',this)"><i class="ti ti-clipboard-plus"></i><span>기록하기</span></button>
+  <button class="tab" onclick="showTab('rank',this)"><i class="ti ti-trophy"></i><span>랭킹</span></button>
+  <button class="tab" onclick="showTab('history',this)"><i class="ti ti-history"></i><span>기록 목록</span></button>
+  <button class="tab" onclick="showTab('stats',this)"><i class="ti ti-chart-bar"></i><span>통계</span></button>
+</div>
+
+<div class="main">
+
+  <!-- 기록하기 -->
+  <div class="section active" id="sec-record">
+
+    <div class="card">
+      <div class="section-title"><i class="ti ti-camera"></i>스코어카드 사진으로 자동 입력 (AI)</div>
+      <div class="ai-box" onclick="document.getElementById('cardPhoto').click()">
+        <div class="ai-icon"><i class="ti ti-photo-up"></i></div>
+        <p style="font-size:14px;font-weight:600;color:#1a1a1a">스코어카드 사진 업로드</p>
+        <p style="font-size:12px;color:#888;margin-top:5px">골프장에서 받은 스코어카드를 찍어 올리면<br>AI가 자동으로 모든 점수를 채워드립니다</p>
+      </div>
+      <input type="file" accept="image/*" class="file-input" id="cardPhoto" onchange="handlePhoto(event)">
+      <img id="imgPreview" class="img-preview" style="display:none">
+      <div class="ai-status" id="aiStatus"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="ti ti-map-pin"></i>라운드 정보</div>
+      <div class="row">
+        <div class="field"><label>골프장 이름</label><input type="text" id="courseName" placeholder="예: 남촌 컨트리클럽"></div>
+        <div class="field"><label>라운딩 날짜</label><input type="date" id="roundDate"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>티오프 시간</label><input type="time" id="teeTime"></div>
+        <div class="field"><label>코스 구분</label>
+          <select id="courseType">
+            <option value="">선택 안 함</option>
+            <option>A코스 (전반)</option><option>B코스 (전반)</option><option>C코스 (전반)</option>
+            <option>A코스 (후반)</option><option>B코스 (후반)</option><option>C코스 (후반)</option>
+            <option>전체 18홀</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field" style="min-width:100%"><label>메모 (날씨, 특이사항 등)</label><input type="text" id="memo" placeholder="맑음, 오랜만에 모두 모임 등"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="ti ti-users"></i>참가자 이름 (최대 4명)</div>
+      <div class="row">
+        <div class="field"><label>1번</label><input type="text" id="p0" placeholder="이름" oninput="updateNames()"></div>
+        <div class="field"><label>2번</label><input type="text" id="p1" placeholder="이름" oninput="updateNames()"></div>
+        <div class="field"><label>3번</label><input type="text" id="p2" placeholder="이름" oninput="updateNames()"></div>
+        <div class="field"><label>4번</label><input type="text" id="p3" placeholder="이름" oninput="updateNames()"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="section-title" style="margin:0"><i class="ti ti-list-numbers"></i>홀별 스코어 입력</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="holeCount" onchange="renderScoreGrid()" style="font-size:12px;padding:5px 8px;width:auto">
+            <option value="9">9홀</option>
+            <option value="18" selected>18홀</option>
+          </select>
+          <button class="btn btn-sm" onclick="resetScores()"><i class="ti ti-refresh"></i> 초기화</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="score-table" id="scoreTable"></table>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:.5rem">
+      <button class="btn" onclick="clearForm()">취소</button>
+      <button class="btn btn-primary" onclick="saveRound()"><i class="ti ti-device-floppy"></i> 저장하기</button>
+    </div>
+  </div>
+
+  <!-- 랭킹 -->
+  <div class="section" id="sec-rank">
+    <div class="card">
+      <div class="section-title"><i class="ti ti-trophy"></i>최근 라운드 순위</div>
+      <div id="rankList"><div class="empty-state"><i class="ti ti-golf"></i>저장된 라운드가 없습니다</div></div>
+    </div>
+    <div class="card" style="margin-top:0">
+      <div class="section-title"><i class="ti ti-medal"></i>누적 우승 횟수</div>
+      <div id="allTimeRank"><div class="empty-state" style="padding:1rem"><i class="ti ti-chart-bar"></i>데이터 없음</div></div>
+    </div>
+  </div>
+
+  <!-- 기록 목록 -->
+  <div class="section" id="sec-history">
+    <div class="card">
+      <div class="section-title"><i class="ti ti-history"></i>라운드 기록</div>
+      <div id="historyList"><div class="empty-state"><i class="ti ti-golf"></i>저장된 라운드가 없습니다</div></div>
+    </div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="section" id="sec-stats">
+    <div id="statsContent"><div class="empty-state"><i class="ti ti-chart-bar"></i>라운드를 저장하면 통계가 표시됩니다</div></div>
+  </div>
+
+</div>
+
+<script>
+const PAR_DEFAULT = [4,3,4,5,3,4,4,5,3,4,4,3,5,4,3,4,5,4];
+let players = ['플레이어1','플레이어2','플레이어3','플레이어4'];
+const avCls = ['av0','av1','av2','av3'];
+const medals = ['🥇','🥈','🥉','4위'];
+
+function showTab(t, el) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('sec-'+t).classList.add('active');
+  if(t==='rank') renderRank();
+  if(t==='history') renderHistory();
+  if(t==='stats') renderStats();
+}
+
+function updateNames() {
+  for(let i=0;i<4;i++) players[i]=document.getElementById('p'+i).value.trim()||('플레이어'+(i+1));
+  renderScoreGrid();
+}
+
+function renderScoreGrid() {
+  const n = parseInt(document.getElementById('holeCount').value);
+  const par = PAR_DEFAULT.slice(0,n);
+  const tbl = document.getElementById('scoreTable');
+  let html = '<thead><tr><th class="hole-label">홀</th><th class="par-label">파</th>';
+  players.forEach((p,i)=>html+=`<th><div class="avatar ${avCls[i]}">${p.slice(0,2)}</div><div style="font-size:11px;color:#888;margin-top:3px;font-weight:500">${p}</div></th>`);
+  html += '</tr></thead><tbody>';
+  for(let h=1;h<=n;h++){
+    html+=`<tr><td class="hole-label">${h}H</td><td class="par-label">${par[h-1]}</td>`;
+    for(let p=0;p<4;p++) html+=`<td><input class="score-input" type="number" min="1" max="15" id="h${h}p${p}" placeholder="-" oninput="calcTotals()"></td>`;
+    html+='</tr>';
+    if(h===9&&n===18){
+      html+=`<tr class="front9-row"><td colspan="2">전반</td>`;
+      for(let p=0;p<4;p++) html+=`<td id="f9p${p}">-</td>`;
+      html+='</tr>';
+    }
+  }
+  if(n===18){
+    html+=`<tr class="back9-row"><td colspan="2">후반</td>`;
+    for(let p=0;p<4;p++) html+=`<td id="b9p${p}">-</td>`;
+    html+='</tr>';
+  }
+  html+=`<tr class="total-row"><td colspan="2">합계</td>`;
+  for(let p=0;p<4;p++) html+=`<td id="totp${p}">-</td>`;
+  html+='</tr></tbody>';
+  tbl.innerHTML=html;
+  calcTotals();
+}
+
+function calcTotals() {
+  const n=parseInt(document.getElementById('holeCount').value);
+  const par=PAR_DEFAULT.slice(0,n);
+  let tots=[0,0,0,0],f9=[0,0,0,0],b9=[0,0,0,0];
+  for(let h=1;h<=n;h++) for(let p=0;p<4;p++){
+    const v=parseInt(document.getElementById(`h${h}p${p}`)?.value)||0;
+    tots[p]+=v; if(h<=9)f9[p]+=v; else b9[p]+=v;
+  }
+  const totalPar=par.reduce((a,b)=>a+b,0);
+  const f9Par=par.slice(0,9).reduce((a,b)=>a+b,0);
+  const b9Par=par.slice(9).reduce((a,b)=>a+b,0);
+  for(let p=0;p<4;p++){
+    if(n===18){
+      const fe=document.getElementById(`f9p${p}`);
+      const be=document.getElementById(`b9p${p}`);
+      if(fe)fe.textContent=f9[p]||'-';
+      if(be)be.textContent=b9[p]||'-';
+    }
+    const te=document.getElementById(`totp${p}`);
+    if(te){
+      const diff=tots[p]-totalPar;
+      te.innerHTML=tots[p]?`${tots[p]} <span style="font-size:11px">${diff>0?'+'+diff:diff===0?'E':diff}</span>`:'-';
+    }
+  }
+}
+
+function getScores() {
+  const n=parseInt(document.getElementById('holeCount').value);
+  const scores=[[],[],[],[]];
+  for(let h=1;h<=n;h++) for(let p=0;p<4;p++) scores[p].push(parseInt(document.getElementById(`h${h}p${p}`)?.value)||0);
+  return scores;
+}
+
+function saveRound() {
+  const course=document.getElementById('courseName').value.trim();
+  const date=document.getElementById('roundDate').value;
+  if(!course||!date){alert('골프장 이름과 날짜를 입력해주세요.');return;}
+  const n=parseInt(document.getElementById('holeCount').value);
+  const scores=getScores();
+  const totals=scores.map(s=>s.reduce((a,b)=>a+b,0));
+  if(totals.every(t=>t===0)){alert('최소 한 명의 스코어를 입력해주세요.');return;}
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]');
+  rounds.push({
+    id:Date.now(),course,date,
+    teeTime:document.getElementById('teeTime').value,
+    courseType:document.getElementById('courseType').value,
+    memo:document.getElementById('memo').value,
+    holes:n,players:[...players],scores,totals,
+    par:PAR_DEFAULT.slice(0,n).reduce((a,b)=>a+b,0)
+  });
+  localStorage.setItem('golf_rounds',JSON.stringify(rounds));
+  alert('✅ 저장되었습니다!');
+  document.querySelector('.tab-bar .tab:nth-child(2)').click();
+}
+
+function renderRank() {
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]');
+  const rl=document.getElementById('rankList');
+  const atl=document.getElementById('allTimeRank');
+  if(!rounds.length){
+    rl.innerHTML='<div class="empty-state"><i class="ti ti-golf"></i>저장된 라운드가 없습니다</div>';
+    atl.innerHTML='<div class="empty-state" style="padding:1rem"><i class="ti ti-chart-bar"></i>데이터 없음</div>';
+    return;
+  }
+  const last=rounds[rounds.length-1];
+  const ranked=last.players.map((p,i)=>({name:p,total:last.totals[i],idx:i}))
+    .filter(p=>p.total>0).sort((a,b)=>a.total-b.total);
+  rl.innerHTML=`<div style="font-size:12px;color:#888;margin-bottom:10px"><i class="ti ti-map-pin" style="vertical-align:-2px"></i> ${last.course} · ${last.date}${last.teeTime?' '+last.teeTime:''}${last.courseType?' · '+last.courseType:''}</div>`+
+  ranked.map((p,ri)=>{
+    const diff=p.total-last.par;
+    const diffStr=diff>0?`<span class="over">+${diff}</span>`:diff===0?`<span class="even">E</span>`:`<span class="under">${diff}</span>`;
+    return`<div class="rank-card${ri===0?' first':''}">
+      <div class="rank-num">${medals[ri]||ri+1}</div>
+      <div class="avatar ${avCls[p.idx]}">${p.name.slice(0,2)}</div>
+      <div class="rank-info"><div class="rank-name">${p.name}</div><div class="rank-detail">${last.holes}홀${last.memo?' · '+last.memo:''}</div></div>
+      <div style="text-align:right"><div class="rank-score">${p.total}</div><div class="rank-diff">${diffStr}</div></div>
+    </div>`;
+  }).join('');
+
+  const wins={};
+  rounds.forEach(r=>{
+    const best=r.players.map((p,i)=>({name:p,t:r.totals[i]})).filter(p=>p.t>0).sort((a,b)=>a.t-b.t);
+    if(best.length) wins[best[0].name]=(wins[best[0].name]||0)+1;
+  });
+  const wArr=Object.entries(wins).sort((a,b)=>b[1]-a[1]);
+  if(!wArr.length){atl.innerHTML='<div class="empty-state" style="padding:1rem">데이터 없음</div>';return;}
+  atl.innerHTML=wArr.map(([name,cnt],i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:0.5px solid #f0f0ee">
+      <span style="font-size:18px;width:28px">${['🥇','🥈','🥉'][i]||''}</span>
+      <span style="font-size:14px;font-weight:500;flex:1">${name}</span>
+      <span class="badge badge-gold">${cnt}회 우승</span>
+    </div>`).join('');
+}
+
+function renderHistory() {
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]');
+  const hl=document.getElementById('historyList');
+  if(!rounds.length){hl.innerHTML='<div class="empty-state"><i class="ti ti-golf"></i>저장된 라운드가 없습니다</div>';return;}
+  hl.innerHTML=[...rounds].reverse().map(r=>{
+    const best=r.players.map((p,i)=>({name:p,t:r.totals[i]})).filter(p=>p.t>0).sort((a,b)=>a.t-b.t)[0];
+    return`<div class="history-item">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">${r.course}${best?`<span class="winner-badge">🏆 ${best.name}</span>`:''}</div>
+        <div class="course-info">${r.date}${r.teeTime?' '+r.teeTime:''} · ${r.holes}홀${r.courseType?' · '+r.courseType:''}</div>
+        <div style="margin-top:6px">${r.players.map((p,i)=>r.totals[i]?`<span class="tag">${p} ${r.totals[i]}</span>`:``).join('')}</div>
+        ${r.memo?`<div style="font-size:12px;color:#888;margin-top:5px"><i class="ti ti-note" style="vertical-align:-2px"></i> ${r.memo}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-left:8px">
+        <button class="btn btn-sm" onclick="viewDetail(${r.id})"><i class="ti ti-eye"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRound(${r.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function viewDetail(id) {
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]');
+  const r=rounds.find(x=>x.id===id);
+  if(!r)return;
+  const par=PAR_DEFAULT.slice(0,r.holes);
+  let msg=`[${r.course}] ${r.date}${r.teeTime?' '+r.teeTime:''}\n`;
+  msg+=`홀 | 파 | ${r.players.join(' | ')}\n`;
+  msg+=`---\n`;
+  for(let h=0;h<r.holes;h++) msg+=`${h+1}H | ${par[h]} | ${r.players.map((_,p)=>r.scores[p][h]||'-').join(' | ')}\n`;
+  msg+=`---\n합계 | ${par.reduce((a,b)=>a+b,0)} | ${r.players.map((_,p)=>r.totals[p]||'-').join(' | ')}`;
+  alert(msg);
+}
+
+function deleteRound(id) {
+  if(!confirm('이 라운드 기록을 삭제할까요?'))return;
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]').filter(r=>r.id!==id);
+  localStorage.setItem('golf_rounds',JSON.stringify(rounds));
+  renderHistory();
+}
+
+function renderStats() {
+  const rounds=JSON.parse(localStorage.getItem('golf_rounds')||'[]');
+  const sc=document.getElementById('statsContent');
+  if(!rounds.length){sc.innerHTML='<div class="empty-state"><i class="ti ti-chart-bar"></i>라운드를 저장하면 통계가 표시됩니다</div>';return;}
+  const allPlayers=[...new Set(rounds.flatMap(r=>r.players))];
+  let html='';
+  allPlayers.forEach((name,ni)=>{
+    const myRounds=rounds.filter(r=>r.players.includes(name)&&r.totals[r.players.indexOf(name)]>0);
+    if(!myRounds.length)return;
+    const myScores=myRounds.map(r=>r.totals[r.players.indexOf(name)]);
+    const avg=(myScores.reduce((a,b)=>a+b,0)/myScores.length).toFixed(1);
+    const best=Math.min(...myScores);
+    const worst=Math.max(...myScores);
+    const wins=myRounds.filter(r=>{
+      const sorted=[...r.players.map((p,i)=>({n:p,t:r.totals[i]})).filter(p=>p.t>0)].sort((a,b)=>a.t-b.t);
+      return sorted[0]?.n===name;
+    }).length;
+    html+=`<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="avatar ${avCls[ni%4]}">${name.slice(0,2)}</div>
+        <span style="font-size:15px;font-weight:600">${name}</span>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">평균 스코어</div><div class="stat-val">${avg}</div></div>
+        <div class="stat-card"><div class="stat-label">베스트 스코어</div><div class="stat-val" style="color:#0a6e4e">${best}</div></div>
+        <div class="stat-card"><div class="stat-label">워스트 스코어</div><div class="stat-val" style="color:#c0392b">${worst}</div></div>
+        <div class="stat-card"><div class="stat-label">라운드 수</div><div class="stat-val">${myRounds.length}회</div></div>
+        <div class="stat-card"><div class="stat-label">우승 횟수</div><div class="stat-val" style="color:#534AB7">${wins}회</div></div>
+      </div>
+    </div>`;
+  });
+  sc.innerHTML=html;
+}
+
+function handlePhoto(e) {
+  const file=e.target.files[0];
+  if(!file)return;
+  const st=document.getElementById('aiStatus');
+  const prev=document.getElementById('imgPreview');
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    prev.src=ev.target.result;
+    prev.style.display='block';
+    const b64=ev.target.result.split(',')[1];
+    st.className='ai-status';
+    st.style.display='block';
+    st.innerHTML='<i class="ti ti-loader"></i> AI가 스코어카드를 분석 중입니다...';
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-6',max_tokens:1000,
+          messages:[{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:file.type,data:b64}},
+            {type:'text',text:`이 골프 스코어카드 이미지에서 정보를 추출해주세요.
+골프장명, 날짜, 플레이어 이름, 각 홀의 파(par), 각 홀별 플레이어 스코어를 읽어주세요.
+반드시 JSON만 반환하고, 설명이나 마크다운 없이 순수 JSON만 응답하세요.
+형식: {"course":"골프장명","date":"YYYY-MM-DD","players":["이름1","이름2","이름3","이름4"],"par":[4,3,4,...],"holes":[[p1홀1,p1홀2,...],[p2홀1,p2홀2,...],...]}
+holes는 플레이어별 배열이고, par는 각 홀의 파 배열입니다. 이름 모르면 "플레이어1" 등으로 표기.`}
+          ]}]
+        })
+      });
+      const data=await res.json();
+      const text=data.content?.map(c=>c.text||'').join('');
+      const clean=text.replace(/```json|```/g,'').trim();
+      const parsed=JSON.parse(clean);
+      if(parsed.course)document.getElementById('courseName').value=parsed.course;
+      if(parsed.date)document.getElementById('roundDate').value=parsed.date;
+      if(parsed.players){
+        parsed.players.slice(0,4).forEach((p,i)=>{document.getElementById('p'+i).value=p;});
+        updateNames();
+      }
+      if(parsed.holes&&parsed.holes.length){
+        const hCnt=parsed.holes[0].length;
+        document.getElementById('holeCount').value=hCnt>9?18:9;
+        renderScoreGrid();
+        parsed.holes.forEach((pScores,pi)=>{
+          pScores.forEach((score,hi)=>{
+            const el=document.getElementById(`h${hi+1}p${pi}`);
+            if(el&&score)el.value=score;
+          });
+        });
+        calcTotals();
+      }
+      st.className='ai-status ok';
+      st.innerHTML='<i class="ti ti-check"></i> 인식 완료! 내용을 확인하고 필요하면 수정해 주세요.';
+    }catch(err){
+      st.className='ai-status err';
+      st.innerHTML=`<i class="ti ti-alert-circle"></i> 인식 실패: ${err.message}<br><small>직접 입력해 주세요.</small>`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetScores(){
+  const n=parseInt(document.getElementById('holeCount').value);
+  for(let h=1;h<=n;h++) for(let p=0;p<4;p++){const el=document.getElementById(`h${h}p${p}`);if(el)el.value='';}
+  calcTotals();
+}
+
+function clearForm(){
+  ['courseName','roundDate','teeTime','memo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('courseType').value='';
+  for(let i=0;i<4;i++) document.getElementById('p'+i).value='';
+  players=['플레이어1','플레이어2','플레이어3','플레이어4'];
+  document.getElementById('imgPreview').style.display='none';
+  document.getElementById('aiStatus').style.display='none';
+  renderScoreGrid();
+}
+
+document.getElementById('roundDate').value=new Date().toISOString().split('T')[0];
+renderScoreGrid();
+</script>
+</body>
+</html>
